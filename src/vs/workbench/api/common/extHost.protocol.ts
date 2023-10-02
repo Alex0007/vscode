@@ -1931,6 +1931,7 @@ export interface ICodeActionDto {
 	command?: ICommandDto;
 	kind?: string;
 	isPreferred?: boolean;
+	isCopilot?: boolean;
 	disabled?: string;
 }
 
