@@ -12,6 +12,7 @@ import { IConfigurationChangeEvent, IConfigurationService } from 'vs/platform/co
 import { dispose, Disposable, DisposableStore } from 'vs/base/common/lifecycle';
 import { Registry } from 'vs/platform/registry/common/platform';
 import { coalesce } from 'vs/base/common/arrays';
+import { ICustomTabLabelService, TabLabelInput } from 'vs/workbench/services/label/common/customTabLabels';
 
 const EditorOpenPositioning = {
 	LEFT: 'left',
@@ -163,7 +164,38 @@ interface IEditorCloseResult {
 	readonly sticky: boolean;
 }
 
-export class EditorGroupModel extends Disposable {
+export interface IReadonlyEditorGroupModel {
+
+	readonly onDidModelChange: Event<IGroupModelChangeEvent>;
+
+	readonly id: GroupIdentifier;
+	readonly count: number;
+	readonly stickyCount: number;
+	readonly isLocked: boolean;
+	readonly activeEditor: EditorInput | null;
+	readonly previewEditor: EditorInput | null;
+
+	getEditors(order: EditorsOrder, options?: { excludeSticky?: boolean }): EditorInput[];
+	getEditorByIndex(index: number): EditorInput | undefined;
+	indexOf(editor: EditorInput | IUntypedEditorInput | null, editors?: EditorInput[], options?: IMatchEditorOptions): number;
+	isActive(editor: EditorInput | IUntypedEditorInput): boolean;
+	isPinned(editorOrIndex: EditorInput | number): boolean;
+	isSticky(editorOrIndex: EditorInput | number): boolean;
+	isFirst(editor: EditorInput, editors?: EditorInput[]): boolean;
+	isLast(editor: EditorInput, editors?: EditorInput[]): boolean;
+	findEditor(editor: EditorInput | null, options?: IMatchEditorOptions): [EditorInput, number /* index */] | undefined;
+	contains(editor: EditorInput | IUntypedEditorInput, options?: IMatchEditorOptions): boolean;
+}
+
+interface IEditorGroupModel extends IReadonlyEditorGroupModel {
+	openEditor(editor: EditorInput, options?: IEditorOpenOptions): IEditorOpenResult;
+	closeEditor(editor: EditorInput, context?: EditorCloseContext, openNext?: boolean): IEditorCloseResult | undefined;
+	moveEditor(editor: EditorInput, toIndex: number): EditorInput | undefined;
+	provideEditorTabLabel(editor: EditorInput, input: TabLabelInput): void;
+	setActive(editor: EditorInput | undefined): EditorInput | undefined;
+}
+
+export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 
 	private static IDS = 0;
 
@@ -194,7 +226,8 @@ export class EditorGroupModel extends Disposable {
 	constructor(
 		labelOrSerializedGroup: ISerializedEditorGroupModel | undefined,
 		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@ICustomTabLabelService private readonly customTabLabelService: ICustomTabLabelService,
 	) {
 		super();
 
@@ -593,6 +626,17 @@ export class EditorGroupModel extends Disposable {
 		return editor;
 	}
 
+	provideEditorTabLabel(editor: EditorInput, input: TabLabelInput) {
+		this.customTabLabelService.setCustomTabLabelForEditor(editor, this.id, input);
+
+		const event: IGroupModelChangeEvent = {
+			kind: GroupModelChangeKind.EDITOR_LABEL,
+			editor,
+			editorIndex: this.editors.indexOf(editor)
+		};
+		this._onDidModelChange.fire(event);
+	}
+
 	setActive(candidate: EditorInput | undefined): EditorInput | undefined {
 		let result: EditorInput | undefined = undefined;
 
@@ -907,19 +951,19 @@ export class EditorGroupModel extends Disposable {
 		return [this.editors[index], index];
 	}
 
-	isFirst(candidate: EditorInput | null): boolean {
-		return this.matches(this.editors[0], candidate);
+	isFirst(candidate: EditorInput | null, editors = this.editors): boolean {
+		return this.matches(editors[0], candidate);
 	}
 
-	isLast(candidate: EditorInput | null): boolean {
-		return this.matches(this.editors[this.editors.length - 1], candidate);
+	isLast(candidate: EditorInput | null, editors = this.editors): boolean {
+		return this.matches(editors[editors.length - 1], candidate);
 	}
 
 	contains(candidate: EditorInput | IUntypedEditorInput, options?: IMatchEditorOptions): boolean {
 		return this.indexOf(candidate, this.editors, options) !== -1;
 	}
 
-	private matches(editor: EditorInput | null, candidate: EditorInput | IUntypedEditorInput | null, options?: IMatchEditorOptions): boolean {
+	private matches(editor: EditorInput | null | undefined, candidate: EditorInput | IUntypedEditorInput | null, options?: IMatchEditorOptions): boolean {
 		if (!editor || !candidate) {
 			return false;
 		}

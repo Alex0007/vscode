@@ -27,6 +27,7 @@ import { IErrorWithActions, createErrorWithActions, isErrorWithActions } from 'v
 import { IAction, toAction } from 'vs/base/common/actions';
 import Severity from 'vs/base/common/severity';
 import { IPreferencesService } from 'vs/workbench/services/preferences/common/preferences';
+import { IReadonlyEditorGroupModel } from 'vs/workbench/common/editor/editorGroupModel';
 
 // Static values for editor contributions
 export const EditorExtensions = {
@@ -1098,6 +1099,8 @@ interface IEditorPartConfiguration {
 	tabSizingFixedMinWidth?: number;
 	tabSizingFixedMaxWidth?: number;
 	pinnedTabSizing?: 'normal' | 'compact' | 'shrink';
+	pinnedTabsOnSeparateRow?: boolean;
+	tabHeight?: 'default' | 'compact';
 	preventPinnedEditorClose?: PreventPinnedEditorClose;
 	titleScrollbarSizing?: 'default' | 'large';
 	focusRecentEditorAfterClose?: boolean;
@@ -1349,7 +1352,7 @@ export enum EditorCloseMethod {
 	MOUSE
 }
 
-export function preventEditorClose(group: IEditorGroup, editor: EditorInput, method: EditorCloseMethod, configuration: IEditorPartConfiguration): boolean {
+export function preventEditorClose(group: IEditorGroup | IReadonlyEditorGroupModel, editor: EditorInput, method: EditorCloseMethod, configuration: IEditorPartConfiguration): boolean {
 	if (!group.isSticky(editor)) {
 		return false; // only interested in sticky editors
 	}
@@ -1566,4 +1569,22 @@ export function createEditorOpenError(messageOrError: string | Error, actions: I
 	error.allowDialog = options?.allowDialog;
 
 	return error;
+}
+
+/**
+ * Generates a unique id for a tab
+ * @param editor The editor input
+ * @param groupId The group id
+ * @returns A unique identifier for a specific tab
+ */
+export function generateTabId(editor: EditorInput, groupId: number) {
+	let resourceString: string | undefined;
+	// Properly get the resource and account for side by side editors
+	const resource = EditorResourceAccessor.getCanonicalUri(editor, { supportSideBySide: SideBySideEditor.BOTH });
+	if (resource instanceof URI) {
+		resourceString = resource.toString();
+	} else {
+		resourceString = `${resource?.primary?.toString()}-${resource?.secondary?.toString()}`;
+	}
+	return `${groupId}~${editor.editorId}-${editor.typeId}-${resourceString} `;
 }
