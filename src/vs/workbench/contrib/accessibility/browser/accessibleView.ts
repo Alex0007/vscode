@@ -80,13 +80,12 @@ export interface IAccessibleViewService {
 	readonly _serviceBrand: undefined;
 	show(provider: IAccessibleContentProvider, position?: Position): void;
 	showLastProvider(id: AccessibleViewProviderId): void;
-	showLastProvider(id: AccessibleViewProviderId): void;
 	showAccessibleViewHelp(): void;
 	next(): void;
 	previous(): void;
 	goToSymbol(): void;
 	disableHint(): void;
-	getPosition(): Position | undefined;
+	getPosition(id: AccessibleViewProviderId): Position | undefined;
 	setPosition(position: Position, reveal?: boolean): void;
 	getLastPosition(): Position | undefined;
 	/**
@@ -234,8 +233,11 @@ export class AccessibleView extends Disposable {
 		this._accessibleViewCurrentProviderId.reset();
 	}
 
-	getPosition(): Position | undefined {
-		return this._editorWidget.getPosition() ?? undefined;
+	getPosition(id?: AccessibleViewProviderId): Position | undefined {
+		if (!id || !this._lastProvider || this._lastProvider.id !== id) {
+			return undefined;
+		}
+		return this._editorWidget.getPosition() || undefined;
 	}
 
 	setPosition(position: Position, reveal?: boolean): void {
@@ -250,6 +252,10 @@ export class AccessibleView extends Disposable {
 			return;
 		}
 		this.show(this._lastProvider);
+	}
+
+	clearLastProvider(): void {
+		this._lastProvider = undefined;
 	}
 
 	show(provider?: IAccessibleContentProvider, symbol?: IAccessibleViewSymbol, showAccessibleViewHelp?: boolean, position?: Position): void {
@@ -676,6 +682,9 @@ export class AccessibleViewService extends Disposable implements IAccessibleView
 	showLastProvider(id: AccessibleViewProviderId): void {
 		this._accessibleView?.showLastProvider(id);
 	}
+	clearLastProvider(): void {
+		this._accessibleView?.clearLastProvider();
+	}
 	next(): void {
 		this._accessibleView?.next();
 	}
@@ -704,8 +713,8 @@ export class AccessibleViewService extends Disposable implements IAccessibleView
 	showAccessibleViewHelp(): void {
 		this._accessibleView?.showAccessibleViewHelp();
 	}
-	getPosition(): Position | undefined {
-		return this._accessibleView?.editorWidget.getPosition() ?? undefined;
+	getPosition(id: AccessibleViewProviderId): Position | undefined {
+		return this._accessibleView?.getPosition(id) ?? undefined;
 	}
 	getLastPosition(): Position | undefined {
 		const lastLine = this._accessibleView?.editorWidget.getModel()?.getLineCount();
