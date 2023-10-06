@@ -256,10 +256,6 @@ export class AccessibleView extends Disposable {
 		this.show(this._lastProvider);
 	}
 
-	clearLastProvider(): void {
-		this._lastProvider = undefined;
-	}
-
 	show(provider?: IAccessibleContentProvider, symbol?: IAccessibleViewSymbol, showAccessibleViewHelp?: boolean, position?: Position): void {
 		provider = provider ?? this._currentProvider;
 		if (!provider) {
@@ -683,9 +679,6 @@ export class AccessibleViewService extends Disposable implements IAccessibleView
 	}
 	showLastProvider(id: AccessibleViewProviderId): void {
 		this._accessibleView?.showLastProvider(id);
-	}
-	clearLastProvider(): void {
-		this._accessibleView?.clearLastProvider();
 	}
 	next(): void {
 		this._accessibleView?.next();
