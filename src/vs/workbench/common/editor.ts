@@ -27,6 +27,7 @@ import { IErrorWithActions, createErrorWithActions, isErrorWithActions } from 'v
 import { IAction, toAction } from 'vs/base/common/actions';
 import Severity from 'vs/base/common/severity';
 import { IPreferencesService } from 'vs/workbench/services/preferences/common/preferences';
+import { IReadonlyEditorGroupModel } from 'vs/workbench/common/editor/editorGroupModel';
 
 // Static values for editor contributions
 export const EditorExtensions = {
@@ -1095,8 +1096,12 @@ interface IEditorPartConfiguration {
 	highlightModifiedTabs?: boolean;
 	tabCloseButton?: 'left' | 'right' | 'off';
 	tabSizing?: 'fit' | 'shrink' | 'fixed';
+	tabSizingFixedMinWidth?: number;
 	tabSizingFixedMaxWidth?: number;
 	pinnedTabSizing?: 'normal' | 'compact' | 'shrink';
+	pinnedTabsOnSeparateRow?: boolean;
+	tabHeight?: 'default' | 'compact';
+	preventPinnedEditorClose?: PreventPinnedEditorClose;
 	titleScrollbarSizing?: 'default' | 'large';
 	focusRecentEditorAfterClose?: boolean;
 	showIcons?: boolean;
@@ -1113,9 +1118,10 @@ interface IEditorPartConfiguration {
 	labelFormat?: 'default' | 'short' | 'medium' | 'long';
 	restoreViewState?: boolean;
 	splitInGroupLayout?: 'vertical' | 'horizontal';
-	splitSizing?: 'split' | 'distribute';
+	splitSizing?: 'auto' | 'split' | 'distribute';
 	splitOnDragAndDrop?: boolean;
 	centeredLayoutFixedWidth?: boolean;
+	doubleClickTabToToggleEditorGroupSizes?: boolean;
 	limit?: {
 		enabled?: boolean;
 		excludeDirty?: boolean;
@@ -1338,6 +1344,28 @@ class EditorResourceAccessorImpl {
 	}
 }
 
+export type PreventPinnedEditorClose = 'keyboardAndMouse' | 'keyboard' | 'mouse' | 'never' | undefined;
+
+export enum EditorCloseMethod {
+	UNKNOWN,
+	KEYBOARD,
+	MOUSE
+}
+
+export function preventEditorClose(group: IEditorGroup | IReadonlyEditorGroupModel, editor: EditorInput, method: EditorCloseMethod, configuration: IEditorPartConfiguration): boolean {
+	if (!group.isSticky(editor)) {
+		return false; // only interested in sticky editors
+	}
+
+	switch (configuration.preventPinnedEditorClose) {
+		case 'keyboardAndMouse': return method === EditorCloseMethod.MOUSE || method === EditorCloseMethod.KEYBOARD;
+		case 'mouse': return method === EditorCloseMethod.MOUSE;
+		case 'keyboard': return method === EditorCloseMethod.KEYBOARD;
+	}
+
+	return false;
+}
+
 export const EditorResourceAccessor = new EditorResourceAccessorImpl();
 
 export const enum CloseDirection {
@@ -1541,4 +1569,22 @@ export function createEditorOpenError(messageOrError: string | Error, actions: I
 	error.allowDialog = options?.allowDialog;
 
 	return error;
+}
+
+/**
+ * Generates a unique id for a tab
+ * @param editor The editor input
+ * @param groupId The group id
+ * @returns A unique identifier for a specific tab
+ */
+export function generateTabId(editor: EditorInput, groupId: number) {
+	let resourceString: string | undefined;
+	// Properly get the resource and account for side by side editors
+	const resource = EditorResourceAccessor.getCanonicalUri(editor, { supportSideBySide: SideBySideEditor.BOTH });
+	if (resource instanceof URI) {
+		resourceString = resource.toString();
+	} else {
+		resourceString = `${resource?.primary?.toString()}-${resource?.secondary?.toString()}`;
+	}
+	return `${groupId}~${editor.editorId}-${editor.typeId}-${resourceString} `;
 }
