@@ -344,7 +344,8 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 
 		// Toolbar
 		const containerToolbar = this._register(new ActionBar(toolbarContainer, {
-			ariaLabel: localize('ariaLabelGroupActions', "Empty editor group actions")
+			ariaLabel: localize('ariaLabelGroupActions', "Empty editor group actions"),
+			highlightToggledItems: true
 		}));
 
 		// Toolbar actions
@@ -1044,8 +1045,8 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 
 		// Conditionally lock the group
 		if (
-			isNew &&						// only if this editor was new for the group
-			this.count === 1 &&				// only when this editor was the first editor in the group
+			isNew &&							// only if this editor was new for the group
+			this.count === 1 &&					// only when this editor was the first editor in the group
 			this.groupsView.groups.length > 1	// only when there are more than one groups open
 		) {
 			// only when the editor identifier is configured as such
@@ -1513,7 +1514,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 		// The only exception is when the same editor is opened on both sides of a side
 		// by side editor (https://github.com/microsoft/vscode/issues/138442)
 
-		if (this.groupsView.groups.some(groupView => {
+		if (this.editorPartsView.groups.some(groupView => {
 			if (groupView === this) {
 				return false; // skip (we already handled our group above)
 			}
