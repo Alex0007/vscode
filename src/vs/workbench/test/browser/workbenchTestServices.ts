@@ -168,7 +168,7 @@ import { IRemoteSocketFactoryService, RemoteSocketFactoryService } from 'vs/plat
 import { EditorParts } from 'vs/workbench/browser/parts/editor/editorParts';
 import { CustomTabLabelService } from 'vs/workbench/services/label/common/customTabLabelService';
 import { ICustomTabLabelService, TabLabelInput } from 'vs/workbench/services/label/common/customTabLabels';
-import { TestAccessibleNotificationService } from 'vs/platform/accessibility/browser/accessibleNotificationService';
+import { TestAccessibleNotificationService } from 'vs/workbench/contrib/accessibility/browser/accessibleNotificationService';
 
 export function createFileEditorInput(instantiationService: IInstantiationService, resource: URI): FileEditorInput {
 	return instantiationService.createInstance(FileEditorInput, resource, undefined, undefined, undefined, undefined, undefined, undefined);
