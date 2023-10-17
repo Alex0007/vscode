@@ -1458,9 +1458,8 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 	}
 
 	private shouldRestoreFocus(target: Element): boolean {
-		const activeElement = document.activeElement;
-
-		if (activeElement === document.body) {
+		const activeElement = target.ownerDocument.activeElement;
+		if (activeElement === target.ownerDocument.body) {
 			return true; // always restore focus if nothing is focused currently
 		}
 
