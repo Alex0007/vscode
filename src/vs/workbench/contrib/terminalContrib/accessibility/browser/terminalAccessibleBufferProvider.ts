@@ -56,7 +56,7 @@ export class TerminalAccessibleBufferProvider extends DisposableStore implements
 	}
 
 	onKeyDown(e: IKeyboardEvent): void {
-		if (!isSingleLetterKey(e.browserEvent, this._keybindingService)) {
+		if (!shouldFocusTerminal(e.browserEvent, this._keybindingService)) {
 			return;
 		}
 		this._instance.focus();
@@ -128,7 +128,7 @@ export class TerminalAccessibleBufferProvider extends DisposableStore implements
 }
 export interface ICommandWithEditorLine { command: ITerminalCommand | ICurrentPartialCommand; lineNumber: number }
 
-function isSingleLetterKey(event: KeyboardEvent, keybindingService: IKeybindingService): boolean {
+function shouldFocusTerminal(event: KeyboardEvent, keybindingService: IKeybindingService): boolean {
 	const standardKeyboardEvent = new StandardKeyboardEvent(event);
 	const resolveResult = keybindingService.softDispatch(standardKeyboardEvent, standardKeyboardEvent.target);
 
