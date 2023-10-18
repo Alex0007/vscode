@@ -9,6 +9,7 @@ import { DisposableStore } from 'vs/base/common/lifecycle';
 import { IModelService } from 'vs/editor/common/services/model';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
+import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { ResultKind } from 'vs/platform/keybinding/common/keybindingResolver';
 import { TerminalCapability, ITerminalCommand } from 'vs/platform/terminal/common/capabilities/capabilities';
@@ -35,7 +36,8 @@ export class TerminalAccessibleBufferProvider extends DisposableStore implements
 		@IConfigurationService configurationService: IConfigurationService,
 		@IContextKeyService _contextKeyService: IContextKeyService,
 		@ITerminalService _terminalService: ITerminalService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService
+		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		@IContextViewService private readonly _contextViewService: IContextViewService
 	) {
 		super();
 		this.options.customHelp = customHelp;
@@ -59,6 +61,7 @@ export class TerminalAccessibleBufferProvider extends DisposableStore implements
 		if (!shouldFocusTerminal(e.browserEvent, this._keybindingService)) {
 			return;
 		}
+		this._contextViewService.hideContextView();
 		this._instance.focus();
 	}
 
