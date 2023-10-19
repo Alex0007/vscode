@@ -15,6 +15,7 @@ import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 import { URI } from 'vs/base/common/uri';
 import { IGroupModelChangeEvent } from 'vs/workbench/common/editor/editorGroupModel';
 import { TabLabelInput } from 'vs/workbench/services/label/common/customTabLabels';
+import { IRectangle } from 'vs/platform/window/common/window';
 
 export const IEditorGroupsService = createDecorator<IEditorGroupsService>('editorGroupsService');
 
@@ -480,9 +481,9 @@ export interface IEditorGroupsService extends IEditorGroupsContainer {
 
 	/**
 	 * Opens a new window with a full editor part instantiated
-	 * in there.
+	 * in there at the optional position on screen.
 	 */
-	createAuxiliaryEditorPart(): IAuxiliaryEditorPart;
+	createAuxiliaryEditorPart(options?: { position?: IRectangle }): IAuxiliaryEditorPart;
 }
 
 export const enum OpenEditorContext {
