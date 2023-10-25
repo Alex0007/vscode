@@ -608,6 +608,8 @@ export class TestLayoutService implements IWorkbenchLayoutService {
 	onDidChangePartVisibility: Event<void> = Event.None;
 	onDidLayout = Event.None;
 	onDidChangeNotificationsVisibility = Event.None;
+	onDidAddContainer = Event.None;
+	onDidRemoveContainer = Event.None;
 
 	layout(): void { }
 	isRestored(): boolean { return true; }
