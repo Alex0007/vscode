@@ -16,6 +16,7 @@ import { URI } from 'vs/base/common/uri';
 import { IGroupModelChangeEvent } from 'vs/workbench/common/editor/editorGroupModel';
 import { TabLabelInput } from 'vs/workbench/services/label/common/customTabLabels';
 import { IRectangle } from 'vs/platform/window/common/window';
+import { TabLabelInput } from 'vs/workbench/services/label/common/customTabLabels';
 
 export const IEditorGroupsService = createDecorator<IEditorGroupsService>('editorGroupsService');
 

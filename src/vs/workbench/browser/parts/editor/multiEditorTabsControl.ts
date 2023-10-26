@@ -57,6 +57,7 @@ import { StickyEditorGroupModel, UnstickyEditorGroupModel } from 'vs/workbench/c
 import { IReadonlyEditorGroupModel } from 'vs/workbench/common/editor/editorGroupModel';
 import { ICustomTabLabelService } from 'vs/workbench/services/label/common/customTabLabels';
 import { ILifecycleService, LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle';
+import { ICustomTabLabelService } from 'vs/workbench/services/label/common/customTabLabels';
 
 interface IEditorInputLabel {
 	readonly editor: EditorInput;
@@ -154,7 +155,7 @@ export class MultiEditorTabsControl extends EditorTabsControl {
 		@IEditorGroupsService private readonly editorGroupService: IEditorGroupsService,
 		@ITreeViewsDnDService private readonly treeViewsDragAndDropService: ITreeViewsDnDService,
 		@IEditorResolverService editorResolverService: IEditorResolverService,
-		@ILifecycleService private readonly lifecycleService: ILifecycleService
+		@ILifecycleService private readonly lifecycleService: ILifecycleService,
 	) {
 		super(parent, editorPartsView, groupsView, groupView, tabsModel, contextMenuService, instantiationService, contextKeyService, keybindingService, notificationService, menuService, quickInputService, themeService, editorResolverService);
 
